@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import axios from 'axios';
 
 class Result extends React.Component {
     render() {
@@ -37,23 +38,9 @@ class List extends React.Component {
             owner : "OWNER",
         }
 
-        const headers1 = {
-            id : "ID1",
-            name : "NAME",
-            owner : "OWNER",
-        }
-
-        const headers2 = {
-            id : "ID2",
-            name : "NAME",
-            owner : "OWNER",
-        }
-
         return (
             <div>
                 {this.renderRecord(headers)}
-                {this.renderRecord(headers1)}
-                {this.renderRecord(headers2)}
             </div>
         );
     }
@@ -67,17 +54,31 @@ class Application extends React.Component {
             owner : null,
             keyword : null,
             repoSearch: true,
-            data    : [
-                {
-                }
-            ]
+            results    : []
         }
     }
 
     toggleRepoSearch(bool) {
         this.setState({
-            repoSearch : bool
+            repoSearch : bool,
         })
+    }
+
+    runSearch(keyWord) {
+        const resultData = this.getData();
+
+        this.setState({
+            keyword : keyWord,
+            results : resultData.data,
+        });
+    }
+
+    getData() {
+        return axios.get("https://api.github.com/search/repositories/", {
+            params : {
+                q : 'q='+ this.state.keyword+"%20in:name,description",
+            }
+        });
     }
 
     render() {
@@ -87,10 +88,15 @@ class Application extends React.Component {
                 <button onClick={() => this.toggleRepoSearch(false)}>View Commits</button>
                 <br/>
                 <br/>
+                <input id="inputText" type="text" placeholder="Search"/>
+                <button onClick={() => this.runSearch(document.getElementById("inputText").value)}>Search</button>
+                <br/>
+                <br/>
                 <div className="List">
                     <List 
                         />
                 </div>
+                <h1>{JSON.stringify(this.state.results)}</h1>
             </div>
 
         );
